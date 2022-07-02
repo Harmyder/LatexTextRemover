@@ -7,6 +7,7 @@
         MathInline,
         MathDisplayDollars,
         MathDisplayLatex,
+        CommandFirstSymbol,
         Command,
         CommandOneArg,
         Environment,

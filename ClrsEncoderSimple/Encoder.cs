@@ -161,7 +161,10 @@ namespace ClrsEncoderSimple
             }
             else
             {
-                stack.Push(new Level(transition.To, transition.Mark));
+                if (!transition.IsGobbling)
+                {
+                    stack.Push(new Level(transition.To, transition.Mark));
+                }
                 return stack.Peek();
             }
         }

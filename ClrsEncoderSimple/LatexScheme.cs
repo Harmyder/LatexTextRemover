@@ -1,15 +1,18 @@
 ﻿using ClrsEncoderSimple.Transitions;
+using System.Linq;
 
 namespace ClrsEncoderSimple
 {
     internal static class LatexScheme
     {
         private static readonly State[] PlainEnv = new[] { State.Plain, State.Environment };
+        private static readonly State[] MathAll = new[] { State.MathInline, State.MathDisplayLatex, State.MathDisplayDollars };
         private static readonly State[] PlainEnvBra = new[] { State.Plain, State.Environment, State.Brackets, State.CurlyBraces, State.CommandOneArg };
 
         public static readonly Transition[] Transitions = new Transition[]
         {
             new TransitionChars(PlainEnvBra, State.Command, "\\", TriggerMeaning.Positive),
+            new TransitionGobbler(PlainEnvBra.Concat(MathAll).ToArray(), "\\$", "\\{", "\\\\"),
             new TransitionChars(PlainEnvBra, State.MathInline, "$", TriggerMeaning.Positive),
             new TransitionChars(State.MathInline, "$", TriggerMeaning.Positive),
             new TransitionStrings(PlainEnv, State.MathDisplayLatex, "\\["),

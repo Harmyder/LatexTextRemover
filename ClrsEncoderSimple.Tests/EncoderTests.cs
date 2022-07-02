@@ -249,5 +249,21 @@ namespace ClrsEncoderSimple.Tests
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
+
+        [TestMethod]
+        public void Gobbling()
+        {
+            var text = "\\$";
+            var expectedTextNoText = "\\$";
+            var transitions = new Transition[]
+            {
+                new TransitionGobbler(State.Plain, "\\$"),
+                new TransitionChars(State.Plain, State.Command, "\\", TriggerMeaning.Positive),
+                new TransitionChars(State.Plain, State.MathInline, "$", TriggerMeaning.Positive),
+            };
+            var encoder = new Encoder(transitions, new Level[] { new Level(State.CommandOneArg, null) });
+            var actualTextNoText = encoder.Apply(text);
+            Assert.AreEqual(expectedTextNoText, actualTextNoText);
+        }
     }
 }
