@@ -3,18 +3,14 @@
     internal class Transition
     {
         public static Transition Empty = new Transition(State.None);
-        protected Transition(State from, State to) : this(new State[] { from }, to)
-        {
-        }
+        protected Transition(State from, State to) : this(new State[] { from }, to) { }
         protected Transition(State[] from, State to)
         {
             From = from;
             To = to;
             IsClosing = false;
         }
-        protected Transition(State from) : this(new State[] { from })
-        {
-        }
+        protected Transition(State from) : this(new State[] { from }) { }
         protected Transition(State[] from)
         {
             From = from;

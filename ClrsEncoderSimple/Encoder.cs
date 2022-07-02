@@ -90,10 +90,13 @@ namespace ClrsEncoderSimple
                         else
                         {
                             toExclude = new Transition[0];
-                            textNoText.Append(ShouldReplace(currLevel) ? Encode(text.Substring(i, step)) : text.Substring(i, step));
+                            textNoText.Append(applied == null && ShouldReplace(currLevel) ? Encode(text.Substring(i, step)) : text.Substring(i, step));
                         }
                     }
                 }
+                //Console.WriteLine();
+                //Console.WriteLine(string.Format("{0,3}: ", i) + text.Substring(0, i));
+                //Console.WriteLine(string.Join(">", stack.Reverse().Select(x => x.ToString())));
                 i += step;
             }
 
@@ -152,7 +155,7 @@ namespace ClrsEncoderSimple
                 var fromMark = stack.Peek().Mark;
                 if (fromMark != transition.Mark)
                 {
-                    throw new InvalidOperationException("Marks are not the same");
+                    throw new InvalidOperationException($"Marks are not the same: '{fromMark}' -> '{transition.Mark}'");
                 }
                 return stack.Pop();
             }

@@ -213,5 +213,41 @@ namespace ClrsEncoderSimple.Tests
             var encoder = new Encoder(transitions, OnlyPlain);
             Assert.ThrowsException<InvalidOperationException>(() => encoder.Apply(text));
         }
+
+        [TestMethod]
+        public void CommandOneArgNoDueToWrongNonAlpha()
+        {
+            var text = "\\cmd[opt]{man}";
+            var expectedTextNoText = "\\???[opt]{man}";
+            var transitions = new Transition[]
+            {
+                new TransitionCommandOneArg(State.Plain, "cmd"),
+                new TransitionCommandOneArg(),
+                new TransitionChars(State.Plain, State.Brackets, "[", TriggerMeaning.Positive),
+                new TransitionChars(State.Brackets, "]", TriggerMeaning.Positive),
+                new TransitionChars(State.Plain, State.CurlyBraces, "{", TriggerMeaning.Positive),
+                new TransitionChars(State.CurlyBraces, "}", TriggerMeaning.Positive),
+            };
+            var encoder = new Encoder(transitions, OnlyPlain);
+            var actualTextNoText = encoder.Apply(text);
+            Assert.AreEqual(expectedTextNoText, actualTextNoText);
+        }
+
+        [TestMethod]
+        public void BracesInsideOneArg()
+        {
+            var text = "\\cmd{man{text}more}";
+            var expectedTextNoText = "\\cmd{???{text}????}";
+            var transitions = new Transition[]
+            {
+                new TransitionCommandOneArg(State.Plain, "cmd"),
+                new TransitionCommandOneArg(),
+                new TransitionChars(State.CommandOneArg, State.CurlyBraces, "{", TriggerMeaning.Positive),
+                new TransitionChars(State.CurlyBraces, "}", TriggerMeaning.Positive),
+            };
+            var encoder = new Encoder(transitions, new Level[] { new Level(State.CommandOneArg, null) });
+            var actualTextNoText = encoder.Apply(text);
+            Assert.AreEqual(expectedTextNoText, actualTextNoText);
+        }
     }
 }

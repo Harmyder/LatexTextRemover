@@ -28,5 +28,25 @@ namespace ClrsEncoderSimple.Tests
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
+
+        [TestMethod]
+        public void OneArgReplacement()
+        {
+            var text = "\\figcaption{text$A_0$}";
+            var expectedTextNoText = "\\figcaption{????$A_0$}";
+            var encoder = new Encoder(LatexScheme.Transitions, LatexScheme.ReplacementLevels);
+            var actualTextNoText = encoder.Apply(text);
+            Assert.AreEqual(expectedTextNoText, actualTextNoText);
+        }
+
+        [TestMethod]
+        public void OneArgInnerCommand()
+        {
+            var text = "\\figcaption{text \\proc{text} text.}";
+            var expectedTextNoText = "\\figcaption{???? \\proc{text} ????.}";
+            var encoder = new Encoder(LatexScheme.Transitions, LatexScheme.ReplacementLevels);
+            var actualTextNoText = encoder.Apply(text);
+            Assert.AreEqual(expectedTextNoText, actualTextNoText);
+        }
     }
 }

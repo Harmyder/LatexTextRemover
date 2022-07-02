@@ -8,6 +8,7 @@
         MathDisplayDollars,
         MathDisplayLatex,
         Command,
+        CommandOneArg,
         Environment,
         Brackets,
         CurlyBraces,
