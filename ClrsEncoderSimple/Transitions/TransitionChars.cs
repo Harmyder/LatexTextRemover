@@ -23,7 +23,11 @@ namespace ClrsEncoderSimple.Transitions
         }
         public override Applicability IsApplicable(string next)
         {
-            if (next.Length != 1)
+            if (string.IsNullOrEmpty(next))
+            {
+                return _trigger.Length > 0 ? Applicability.No : Applicability.Yes;
+            }
+            if (next.Length > 1)
             {
                 throw new ArgumentException("Expected single character");
             }

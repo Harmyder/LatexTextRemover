@@ -87,12 +87,33 @@ namespace ClrsEncoderSimple
                         }
                     }
                 }
-                //Console.WriteLine();
-                //Console.WriteLine(text.Substring(0, i));
-                //Console.WriteLine(string.Join(">", stack.Reverse().Select(x => x.ToString())));
+                Console.WriteLine();
+                Console.WriteLine(text.Substring(0, i));
+                Console.WriteLine(string.Join(">", stack.Reverse().Select(x => x.ToString())));
                 i += step;
             }
+
+            TryForEofTransitions(stack);
+
             return textNoText.ToString();
+        }
+
+        private void TryForEofTransitions(Stack<State> stack)
+        {
+            while (stack.Count > 1)
+            {
+                var eofTransitions = _transitions.Where(t => t.From == stack.Peek()).Concat(new[] { Transition.Empty });
+                var transitions = eofTransitions.Where(t => t.IsApplicable(string.Empty) == Applicability.Yes).ToArray();
+                if (transitions.Length == 0)
+                {
+                    throw new ArgumentException("Invalid text supplied. Stack is left with " + string.Join(">", stack.Reverse().Select(x => x.ToString())));
+                }
+                if (transitions.Length > 1)
+                {
+                    throw new ArgumentException("Ambiguous transitions");
+                }
+                stack.Add(transitions.Single());
+            }
         }
 
         private string Encode(string input)

@@ -8,8 +8,7 @@
         MathDisplayDollars,
         MathDisplayLatex,
         Command,
-        EnvironmentNonreplaceable,
-        EnvironmentReplaceable,
+        Environment,
         Brackets,
         CurlyBraces,
     }
