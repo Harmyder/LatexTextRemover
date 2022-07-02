@@ -9,24 +9,27 @@ namespace ClrsEncoderSimple
     internal sealed class Encoder
     {
         private readonly Transition[] _transitions;
+        private readonly Level[] _replacementLevels;
 
-        public Encoder(Transition[] transitions)
+        public Encoder(Transition[] transitions, Level[] replacementLevels)
         {
             _transitions = transitions;
+            _replacementLevels = replacementLevels;
         }
 
         public string Apply(string text)
         {
-            var stack = new Stack<State>();
-            stack.Push(State.Plain);
+            var stack = new Stack<Level>();
+            stack.Push(new Level(State.Plain, null));
 
             var textNoText = new StringBuilder();
+            var toExclude = new Transition[0];
 
             for (var i = 0; i < text.Length;)
             {
                 var next = string.Empty;
                 var step = 0;
-                var localTransitions = _transitions.Where(t => t.From == stack.Peek()).Concat(new[] { Transition.Empty });
+                var localTransitions = _transitions.Where(t => t.From.Contains(stack.Peek().State)).Concat(new[] { Transition.Empty }).Except(toExclude);
                 Transition? fallback = null;
                 while (localTransitions.Any())
                 {
@@ -61,35 +64,36 @@ namespace ClrsEncoderSimple
                     {
                         localTransitions = new Transition[0];
                         var shouldRewind = false;
-                        var currState = stack.Peek();
+                        var currLevel = stack.Peek();
+                        Transition? applied = null;
                         if (localApplicable.Any())
                         {
-                            var applicableTransition = localApplicable.Single();
-                            currState = stack.Add(applicableTransition);
-                            shouldRewind = applicableTransition.ShouldRewind;
+                            applied = localApplicable.Single();
+                            currLevel = stack.Add(applied);
+                            shouldRewind = applied.ShouldRewind;
                         }
                         else
                         {
                             if (fallback != null)
                             {
-                                currState = stack.Add(fallback);
+                                applied = fallback;
+                                currLevel = stack.Add(applied);
                                 shouldRewind = fallback.ShouldRewind;
                             }
                             step = 1;
                         }
                         if (shouldRewind)
                         {
+                            toExclude = new Transition[] { applied };
                             step = 0;
                         }
                         else
                         {
-                            textNoText.Append(currState == State.Plain ? Encode(text.Substring(i, step)) : text.Substring(i, step));
+                            toExclude = new Transition[0];
+                            textNoText.Append(ShouldReplace(currLevel) ? Encode(text.Substring(i, step)) : text.Substring(i, step));
                         }
                     }
                 }
-                Console.WriteLine();
-                Console.WriteLine(text.Substring(0, i));
-                Console.WriteLine(string.Join(">", stack.Reverse().Select(x => x.ToString())));
                 i += step;
             }
 
@@ -98,15 +102,15 @@ namespace ClrsEncoderSimple
             return textNoText.ToString();
         }
 
-        private void TryForEofTransitions(Stack<State> stack)
+        private void TryForEofTransitions(Stack<Level> stack)
         {
             while (stack.Count > 1)
             {
-                var eofTransitions = _transitions.Where(t => t.From == stack.Peek()).Concat(new[] { Transition.Empty });
+                var eofTransitions = _transitions.Where(t => t.From.Contains(stack.Peek().State)).Concat(new[] { Transition.Empty });
                 var transitions = eofTransitions.Where(t => t.IsApplicable(string.Empty) == Applicability.Yes).ToArray();
                 if (transitions.Length == 0)
                 {
-                    throw new ArgumentException("Invalid text supplied. Stack is left with " + string.Join(">", stack.Reverse().Select(x => x.ToString())));
+                    throw new ArgumentException("Invalid text supplied. Stack still contains\n" + string.Join("\n", stack.Reverse().Select(x => x.ToString())));
                 }
                 if (transitions.Length > 1)
                 {
@@ -125,20 +129,37 @@ namespace ClrsEncoderSimple
             }
             return output;
         }
+
+        private bool ShouldReplace(Level level)
+        {
+            foreach (var l in _replacementLevels)
+            {
+                if (l.State == level.State && l.Mark == level.Mark)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     internal static class Extensions
     {
-        public static State Add(this Stack<State> stack, Transition transition)
+        public static Level Add(this Stack<Level> stack, Transition transition)
         {
             if (transition.IsClosing)
             {
+                var fromMark = stack.Peek().Mark;
+                if (fromMark != transition.Mark)
+                {
+                    throw new InvalidOperationException("Marks are not the same");
+                }
                 return stack.Pop();
             }
             else
             {
-                stack.Push(transition.To);
-                return transition.To;
+                stack.Push(new Level(transition.To, transition.Mark));
+                return stack.Peek();
             }
         }
     }

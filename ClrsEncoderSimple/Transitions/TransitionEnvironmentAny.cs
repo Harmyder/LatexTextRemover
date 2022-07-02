@@ -2,29 +2,31 @@
 
 namespace ClrsEncoderSimple.Transitions
 {
-    internal class TransitionEnvironment : Transition
+    internal class TransitionEnvironmentAny : Transition
     {
-        private readonly string[] _trigger;
         private const string BeginPrefix = "\\begin";
         private const string EndPrefix = "\\end";
         private readonly string Prefix;
 
         private string? _lastFoundEnvironment;
 
-        public TransitionEnvironment(State from, params string[] trigger) : base(from, State.Environment)
+        public TransitionEnvironmentAny(State[] from) : base(from, State.Environment)
         {
-            _trigger = trigger;
             Prefix = BeginPrefix;
         }
 
-        public TransitionEnvironment(params string[] trigger) : base(State.Environment)
+        public TransitionEnvironmentAny(State from) : base(from, State.Environment)
         {
-            _trigger = trigger;
+            Prefix = BeginPrefix;
+        }
+
+        public TransitionEnvironmentAny() : base(State.Environment)
+        {
             Prefix = EndPrefix;
         }
 
         public override string? Mark => _lastFoundEnvironment;
-        public override bool ShouldRewind => false;
+        public override bool ShouldRewind => true;
         public override Applicability IsApplicable(string next)
         {
             _lastFoundEnvironment = null;
@@ -42,26 +44,12 @@ namespace ClrsEncoderSimple.Transitions
                 if (next.Last() == '}')
                 {
                     var envName = suffix.Substring(0, suffix.Length - 1);
-                    foreach (var trigger in _trigger)
-                    {
-                        if (trigger == envName)
-                        {
-                            _lastFoundEnvironment = envName;
-                            return Applicability.Yes;
-                        }
-                    }
-                    return Applicability.No;
+                    _lastFoundEnvironment = envName;
+                    return Applicability.Yes;
                 }
                 else
                 {
-                    foreach (var trigger in _trigger)
-                    {
-                        if (trigger.StartsWith(suffix))
-                        {
-                            return Applicability.Inconclusive;
-                        }
-                    }
-                    return Applicability.No;
+                    return Applicability.Inconclusive;
                 }
             }
         }

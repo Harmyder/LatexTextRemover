@@ -9,7 +9,7 @@ var text = File.ReadAllText(path);
 
 
 
-var encoder = new Encoder(LatexScheme.Transitions);
+var encoder = new Encoder(LatexScheme.Transitions, LatexScheme.ReplacementLevels);
 var textNoText = encoder.Apply(text);
 
 var pathNoText = Path.ChangeExtension(path, "notext.tex");

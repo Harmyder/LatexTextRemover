@@ -10,7 +10,15 @@ namespace ClrsEncoderSimple.Transitions
         {
             _trigger = trigger;
         }
+        public TransitionStrings(State[] from, State to, params string[] trigger) : base(from, to)
+        {
+            _trigger = trigger;
+        }
         public TransitionStrings(State from, params string[] trigger) : base(from)
+        {
+            _trigger = trigger;
+        }
+        public TransitionStrings(State[] from, params string[] trigger) : base(from)
         {
             _trigger = trigger;
         }

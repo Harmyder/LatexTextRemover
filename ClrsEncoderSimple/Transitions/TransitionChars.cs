@@ -7,19 +7,24 @@ namespace ClrsEncoderSimple.Transitions
     {
         private readonly char[] _trigger;
         private readonly TriggerMeaning _triggerMeaning;
-        private readonly bool _shouldRewind;
 
-        public TransitionChars(State from, State to, string trigger, TriggerMeaning triggerMeaning, bool shouldGobble = false) : base(from, to)
+        public TransitionChars(State from, State to, string trigger, TriggerMeaning triggerMeaning)
+            : this(new[] { from }, to, trigger, triggerMeaning)
         {
-            _trigger = trigger.ToCharArray();
-            _triggerMeaning = triggerMeaning;
-            _shouldRewind = shouldGobble;
         }
-        public TransitionChars(State from, string trigger, TriggerMeaning triggerMeaning, bool shouldRewind = false) : base(from)
+        public TransitionChars(State[] from, State to, string trigger, TriggerMeaning triggerMeaning) : base(from, to)
         {
             _trigger = trigger.ToCharArray();
             _triggerMeaning = triggerMeaning;
-            _shouldRewind = shouldRewind;
+        }
+        public TransitionChars(State from, string trigger, TriggerMeaning triggerMeaning)
+            : this(new[] { from }, trigger, triggerMeaning)
+        {
+        }
+        public TransitionChars(State[] from, string trigger, TriggerMeaning triggerMeaning) : base(from)
+        {
+            _trigger = trigger.ToCharArray();
+            _triggerMeaning = triggerMeaning;
         }
         public override Applicability IsApplicable(string next)
         {
@@ -44,6 +49,6 @@ namespace ClrsEncoderSimple.Transitions
                 throw new InvalidOperationException("Wrong trigger meaning");
             }
         }
-        public override bool ShouldRewind => _shouldRewind;
+        public override bool ShouldRewind => _triggerMeaning == TriggerMeaning.Negative;
     }
 }

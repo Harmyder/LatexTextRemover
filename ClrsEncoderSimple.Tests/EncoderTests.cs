@@ -7,6 +7,8 @@ namespace ClrsEncoderSimple.Tests
     [TestClass]
     public class EncoderTests
     {
+        private readonly Level[] OnlyPlain = new Level[] { new Level(State.Plain, null) };
+
         [TestMethod]
         public void Spaces()
         {
@@ -15,7 +17,7 @@ namespace ClrsEncoderSimple.Tests
             var transitions = new Transition[]
             {
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -32,7 +34,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionStrings(State.Plain, State.MathDisplayDollars, "$$"),
                 new TransitionStrings(State.MathDisplayDollars, "$$"),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -48,7 +50,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionStrings(State.Plain, State.MathDisplayLatex, "\\["),
                 new TransitionChars(State.Command, string.Empty, TriggerMeaning.Positive),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -63,7 +65,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionChars(State.Plain, State.Command, "\\", TriggerMeaning.Positive),
                 new TransitionChars(State.Command, string.Empty, TriggerMeaning.Positive),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -76,11 +78,42 @@ namespace ClrsEncoderSimple.Tests
             var transitions = new Transition[]
             {
                 new TransitionChars(State.Plain, State.Command, "\\", TriggerMeaning.Positive),
-                new TransitionChars(State.Command, CharClasses.Alphas, TriggerMeaning.Negative, true),
+                new TransitionChars(State.Command, CharClasses.Alphas, TriggerMeaning.Negative),
                 new TransitionChars(State.Plain, State.Brackets, "[", TriggerMeaning.Positive),
                 new TransitionChars(State.Brackets, "]", TriggerMeaning.Positive),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
+            var actualTextNoText = encoder.Apply(text);
+            Assert.AreEqual(expectedTextNoText, actualTextNoText);
+        }
+
+        [TestMethod]
+        public void RewindTheSameTransition()
+        {
+            var text = "\\command\\command";
+            var expectedTextNoText = text;
+            var transitions = new Transition[]
+            {
+                new TransitionChars(State.Plain, State.Command, "\\", TriggerMeaning.Positive),
+                new TransitionChars(State.Command, CharClasses.Alphas, TriggerMeaning.Negative),
+                new TransitionChars(State.Command, string.Empty, TriggerMeaning.Positive),
+            };
+            var encoder = new Encoder(transitions, OnlyPlain);
+            var actualTextNoText = encoder.Apply(text);
+            Assert.AreEqual(expectedTextNoText, actualTextNoText);
+        }
+
+        [TestMethod]
+        public void RewindAgainEnvironment()
+        {
+            var text = "\\begin{one}\\begin{two}\\end{two}\\end{one}";
+            var expectedTextNoText = "\\begin{one}\\begin{two}\\end{two}\\???{???}";
+            var transitions = new Transition[]
+            {
+                new TransitionEnvironmentAny(new[] { State.Plain, State.Environment }),
+                new TransitionEnvironmentAny(),
+            };
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -95,7 +128,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionEnvironment(State.Plain, "equation"),
                 new TransitionEnvironment("equation"),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -110,7 +143,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionEnvironment(State.Plain, "equation"),
                 new TransitionEnvironment("equation"),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             Assert.ThrowsException<ArgumentException>(() => encoder.Apply(text));
         }
 
@@ -125,7 +158,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionEnvironment(State.Plain, "equation"),
                 new TransitionEnvironment("equation"),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -141,7 +174,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionEnvironment(State.Environment, "equation"),
                 new TransitionEnvironment("equation"),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -158,7 +191,7 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionEnvironment(State.Environment, "equation"),
                 new TransitionEnvironment("equation"),
             };
-            var encoder = new Encoder(transitions);
+            var encoder = new Encoder(transitions, OnlyPlain);
             var actualTextNoText = encoder.Apply(text);
             Assert.AreEqual(expectedTextNoText, actualTextNoText);
         }
@@ -177,8 +210,8 @@ namespace ClrsEncoderSimple.Tests
                 new TransitionEnvironment(State.Environment, "equation"),
                 new TransitionEnvironment("equation"),
             };
-            var encoder = new Encoder(transitions);
-            Assert.ThrowsException<Exception>(() => encoder.Apply(text));
+            var encoder = new Encoder(transitions, OnlyPlain);
+            Assert.ThrowsException<InvalidOperationException>(() => encoder.Apply(text));
         }
     }
 }
