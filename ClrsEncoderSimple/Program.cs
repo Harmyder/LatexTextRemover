@@ -36,9 +36,9 @@ var parts = new[] {
     "npc.tex",
     "number-theory.tex",
     "orders.tex",
-    "pagei.tex",
-    "pageii.tex",
-    "pageiv.tex",
+    //"pagei.tex",
+    //"pageii.tex",
+    //"pageiv.tex",
     "part-ads.tex",
     "part-advanced-design.tex",
     "part-appendix.tex",
@@ -61,21 +61,23 @@ var parts = new[] {
     "veb-trees.tex",
 };
 
-var folder = "C:\\Yola\\i2a\\sources";
+var folderIn = "C:\\Yola\\i2a\\sources";
+var folderOut = "C:\\Yola\\i2a\\sources.notext";
+
+Directory.CreateDirectory(folderOut);
 
 foreach (var p in parts)
 {
     Console.Write($"Start {p}.");
 
-    var path = Path.Combine(folder, p);
+    var path = Path.Combine(folderIn, p);
 
     var text = File.ReadAllText(path);
 
     var encoder = new Encoder(LatexScheme.Transitions, LatexScheme.ReplacementLevels);
     var textNoText = encoder.Apply(text);
 
-    var pathNoText = Path.ChangeExtension(path, "notext.tex");
-    File.WriteAllText(pathNoText, textNoText);
+    File.WriteAllText(Path.Combine(folderOut, p), textNoText);
 
     Console.WriteLine(" Done.");
 }

@@ -26,6 +26,7 @@ namespace ClrsEncoderSimple
             new TransitionChars(State.CurlyBraces, "}", TriggerMeaning.Positive),
             new TransitionEnvironmentAny(PlainEnv),
             new TransitionEnvironmentAny(),
+            // Add or remove single mandatory argument commands for that you want letters to be replaced.
             new TransitionCommandOneArg(PlainEnv, "subheading", "section", "figcaption"),
             new TransitionCommandOneArg(),
         };
@@ -33,6 +34,7 @@ namespace ClrsEncoderSimple
         public static readonly Level[] ReplacementLevels = new Level[]
         {
             new Level(State.Plain, null),
+            // Add or remove environments names to replace letters in them.
             new Level(State.Environment, "corollary"),
             new Level(State.Environment, "corollary"),
             new Level(State.Environment, "description"),
