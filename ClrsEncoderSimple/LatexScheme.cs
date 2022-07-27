@@ -27,7 +27,7 @@ namespace ClrsEncoderSimple
             new TransitionEnvironmentAny(PlainEnv),
             new TransitionEnvironmentAny(),
             // Add or remove single mandatory argument commands for that you want letters to be replaced.
-            new TransitionCommandOneArg(PlainEnv, "subheading", "section", "figcaption"),
+            new TransitionCommandOneArg(PlainEnv, "subheading", "section", "figcaption", "footnote"),
             new TransitionCommandOneArg(),
         };
 
